@@ -1,0 +1,2 @@
+[run]
+omit=tests/*, .venv/*,manage.py, *test.py, diplom\wsgi.py, diplom\asgi.py, backend\tests.py
