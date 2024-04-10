@@ -19,6 +19,14 @@ def user_factory():
 
 
 @pytest.fixture
+def order_item_factory():
+    def factory(*args, **kwargs):
+        return baker.make(OrderItem, *args, **kwargs)
+
+    return factory
+
+
+@pytest.fixture
 def category_factory():
     def factory(*args, **kwargs):
         return baker.make(Category, *args, **kwargs)
@@ -151,7 +159,7 @@ def test_contact(client, user_factory, contact_factory):
 
 @pytest.mark.django_db
 def test_basket(client, user_factory, order_factory, shop_factory, contact_factory,
-                product_info_factory, product_factory, category_factory):
+                product_info_factory, product_factory, category_factory, order_item_factory):
     user = user_factory()
     contact = contact_factory(user_id=user.pk)
     # order = order_factory(user_id=user.pk)
@@ -175,3 +183,33 @@ def test_basket(client, user_factory, order_factory, shop_factory, contact_facto
                                                        'quantity': 2})
     assert patch_resp.status_code == 200
 
+    delete_resp = client.delete('/backend/basket', data={'product_info': product_info.pk})
+    assert delete_resp.status_code == 200
+    assert len(OrderItem.objects.filter(product_info=product_info.pk)) == 0
+
+    user2 = user_factory()
+    order = order_factory(user_id=user2.pk, state='basket')
+
+    put_resp = client.put('/backend/basket')
+    assert put_resp.status_code == 200
+    assert put_resp.json()['Status'] is False
+
+    order_item = order_item_factory(order_id=order.pk, quantity=1, product_info_id=product_info.pk)
+
+    put_resp = client.put('/backend/basket')
+
+    assert put_resp.json()['Message'] == 'Корзина пуста'
+
+
+@pytest.mark.django_db
+def test_order(client, user_factory, order_factory, shop_factory, contact_factory,
+               product_info_factory, product_factory, category_factory):
+    user = user_factory(type='shop')
+    contact = contact_factory(user=user)
+    user2 = user_factory(type='buyer')
+    order2 = order_factory(user=user2, contact_id=contact.pk)
+    client.force_authenticate(user=user)
+    get_resp = client.get('/backend/order')
+    assert get_resp.status_code == 200
+    for order in get_resp.json():
+        assert order['user'] == user2.pk
