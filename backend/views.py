@@ -233,9 +233,11 @@ class UserView(APIView):
         contact = Contact.objects.filter(user_id=request.user.id).first()
 
         if contact:
-            request.data._mutable = True
-            request.data.update({'user': request.user.id})
-            serializer = ContactSerializer(contact, data=request.data, partial=True)
+            # request.data._mutable = True
+            copy_request_data = request.data.copy()
+            copy_request_data.update({'user': request.user.id})
+
+            serializer = ContactSerializer(contact, data=copy_request_data, partial=True)
             if serializer.is_valid():
                 serializer.save()
 
@@ -276,8 +278,9 @@ class ProductInfoView(APIView):
             return JsonResponse({'Status': False, 'Error': 'Требуется пройти аутентификацию'})
         if request.user.type == 'shop':
 
-            shop_id = int(str(Shop.objects.filter(user_id=request.user.id).first()).split(',')[0])
-            products = ProductInfo.objects.filter(shop_id=shop_id)
+            shop = Shop.objects.filter(user_id=request.user.pk).first()
+
+            products = ProductInfo.objects.filter(shop_id=shop.pk)
             serializer = ProductInfoSerializer(products, many=True)
             return Response(serializer.data)
 
@@ -291,13 +294,13 @@ class ProductInfoView(APIView):
         """
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Требуется пройти аутентификацию'})
-        shop_id = int(str(Shop.objects.filter(user_id=request.user.id).first()).split(',')[0])
+        shop = Shop.objects.filter(user_id=request.user.pk).first()
         if {'external_id'}.issubset(request.data):
-            request.data._mutable = True
+            # request.data._mutable = True
             product = ProductInfo.objects.filter(
-                Q(shop_id=shop_id) & Q(external_id=request.data.get('external_id'))).first()
+                Q(shop_id=shop.pk) & Q(external_id=request.data.get('external_id'))).first()
             if product:
-                request.data._mutable = True
+                # request.data._mutable = True
                 serializer = ProductInfoSerializer(product, data=request.data, partial=True)
                 if serializer.is_valid():
                     serializer.save()

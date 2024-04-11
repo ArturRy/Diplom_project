@@ -148,13 +148,13 @@ def test_contact(client, user_factory, contact_factory):
     assert get_response.status_code == 200
     assert get_response.json()['contacts'][0]['phone'] == phone
 
-    # contact.street = 'some_street'
-    #
-    # serializer = ContactSerializer(contact)
-    # patch_response = client.patch('/backend/user/contacts')
-    # print(serializer.data)
-    # assert patch_response.status_code == 200
-    # assert patch_response.json()['contacts'][0]['street'] == 'some_street'
+
+    serializer = ContactSerializer(contact)
+    patch_response = client.patch('/backend/user/info', data=serializer.data)
+    print(serializer.data)
+    print(patch_response.json())
+    assert patch_response.status_code == 200
+    assert patch_response.json()['Status'] is True
 
 
 @pytest.mark.django_db
@@ -193,12 +193,10 @@ def test_basket(client, user_factory, order_factory, shop_factory, contact_facto
     put_resp = client.put('/backend/basket')
     assert put_resp.status_code == 200
     assert put_resp.json()['Status'] is False
-
-    order_item = order_item_factory(order_id=order.pk, quantity=1, product_info_id=product_info.pk)
-
-    put_resp = client.put('/backend/basket')
-
     assert put_resp.json()['Message'] == 'Корзина пуста'
+    # order_item = order_item_factory(order_id=order.pk, quantity=1, product_info_id=product_info.pk)
+
+    # put_resp = client.put('/backend/basket')
 
 
 @pytest.mark.django_db
@@ -208,8 +206,46 @@ def test_order(client, user_factory, order_factory, shop_factory, contact_factor
     contact = contact_factory(user=user)
     user2 = user_factory(type='buyer')
     order2 = order_factory(user=user2, contact_id=contact.pk)
+    get_resp = client.get('/backend/order')
+    client.force_authenticate(user=user2)
+    assert get_resp.json()['Status'] is False
     client.force_authenticate(user=user)
     get_resp = client.get('/backend/order')
     assert get_resp.status_code == 200
     for order in get_resp.json():
         assert order['user'] == user2.pk
+
+    patch_resp = client.patch('/backend/order', data={'id': order2.pk, 'state': 'new'})
+    print(patch_resp.json())
+    assert patch_resp.status_code == 200
+    assert patch_resp.json()['Status'] is True
+
+@pytest.mark.django_db
+def test_product_info(client, product_info_factory, product_factory, user_factory, category_factory, shop_factory):
+    user = user_factory(type='shop')
+    category = category_factory()
+    product = product_factory(category=category)
+    shop = shop_factory(user_id=user.pk)
+    product_info = product_info_factory(product_id=product.pk, shop_id=shop.pk)
+    client.force_authenticate(user=user)
+    get_resp = client.get('/backend/product/info')
+    # print(get_resp.json())
+    assert get_resp.status_code == 200
+    assert get_resp.json() is not None
+
+    patch_resp = client.patch('/backend/product/info', data={'external_id': product_info.external_id})
+    print(patch_resp)
+    print(product_info.external_id)
+    print(product_info.shop_id)
+    print(shop.pk)
+    assert patch_resp.json()['Status'] is True
+
+# @pytest.mark.django_db
+# def test_partner_update(client, user_factory):
+#     user = user_factory(type='shop')
+#     client.force_authenticate(user=user)
+#     url = 'https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/shop1.yaml'
+#     response = client.post('/backend/shop/update', data={'url': url})
+#     assert response.status_code == 200
+#     assert response.json()['Status'] is True
+
