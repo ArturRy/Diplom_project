@@ -148,13 +148,15 @@ def test_contact(client, user_factory, contact_factory):
     assert get_response.status_code == 200
     assert get_response.json()['contacts'][0]['phone'] == phone
 
-
     serializer = ContactSerializer(contact)
     patch_response = client.patch('/backend/user/info', data=serializer.data)
-    print(serializer.data)
-    print(patch_response.json())
+
     assert patch_response.status_code == 200
     assert patch_response.json()['Status'] is True
+
+    delete_resp = client.delete('/backend/user/info')
+
+    assert delete_resp.status_code == 200
 
 
 @pytest.mark.django_db
@@ -168,7 +170,7 @@ def test_basket(client, user_factory, order_factory, shop_factory, contact_facto
     product = product_factory(category=category)
     product_info = product_info_factory(shop_id=shop.pk, product_id=product.pk)
     client.force_authenticate(user=user)
-    post_resp = client.post('/backend/basket', data={'product_info': product_info.id,
+    post_resp = client.post('/backend/basket', data={'product_info': product_info.pk,
                                                      'quantity': 1,
                                                      'contact_id': contact.pk})
     assert post_resp.status_code == 200
@@ -178,10 +180,21 @@ def test_basket(client, user_factory, order_factory, shop_factory, contact_facto
     get_resp = client.get('/backend/basket')
 
     assert get_resp.status_code == 200
-
-    patch_resp = client.patch('/backend/basket', data={'product_info': product_info.id,
+    order = Order.objects.get(user_id=user.pk)
+    order_item = order_item_factory(order_id=order.pk, product_info_id=product_info.pk)
+    patch_resp = client.patch('/backend/basket', data={'product_info': product_info.pk,
                                                        'quantity': 2})
+    # (Q(order__user=request.user.id) & Q(order__state='basket') &
+    #  Q(product_info=request.data['product_info']))
+    print(user.pk)
+    print(order.user_id)
+    print(order.state)
+
+    print(patch_resp.json())
+
     assert patch_resp.status_code == 200
+    assert patch_resp.json()['Status'] is True
+
 
     delete_resp = client.delete('/backend/basket', data={'product_info': product_info.pk})
     assert delete_resp.status_code == 200
@@ -220,6 +233,7 @@ def test_order(client, user_factory, order_factory, shop_factory, contact_factor
     assert patch_resp.status_code == 200
     assert patch_resp.json()['Status'] is True
 
+
 @pytest.mark.django_db
 def test_product_info(client, product_info_factory, product_factory, user_factory, category_factory, shop_factory):
     user = user_factory(type='shop')
@@ -240,12 +254,11 @@ def test_product_info(client, product_info_factory, product_factory, user_factor
     print(shop.pk)
     assert patch_resp.json()['Status'] is True
 
-# @pytest.mark.django_db
-# def test_partner_update(client, user_factory):
-#     user = user_factory(type='shop')
-#     client.force_authenticate(user=user)
-#     url = 'https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/shop1.yaml'
-#     response = client.post('/backend/shop/update', data={'url': url})
-#     assert response.status_code == 200
-#     assert response.json()['Status'] is True
-
+@pytest.mark.django_db
+def test_partner_update(client, user_factory):
+    user = user_factory(type='shop')
+    client.force_authenticate(user=user)
+    url = 'https://raw.githubusercontent.com/ArturRy/Diplom_project/main/data/shop1.yaml'
+    response = client.post('/backend/shop/update', data={'url': url})
+    assert response.status_code == 200
+    assert response.json()['Status'] is True
