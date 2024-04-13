@@ -1,0 +1,223 @@
+Примеры запросов
+###
+
+
+# Получить список магазинов
+GET  http://127.0.0.1:8000/backend/shop
+
+###
+
+
+# Получить список категорий
+GET  http://127.0.0.1:8000/backend/category
+
+###
+
+
+# Получить список продуктов
+GET  http://127.0.0.1:8000/backend/product
+###
+
+# Создание пользователя
+POST http://127.0.0.1:8000/backend/user/register
+Content-Type: application/json
+
+{
+    "type": "shop",
+    "email": "mini@mail.ru",
+    "first_name": "some_name",
+    "last_name": "some_name",
+    "company": "some_company",
+    "position": "some_position",
+    "password": "some_validate_passwodr12345"
+}
+
+###
+
+
+# Подтверждение регистрации пользователя
+POST http://127.0.0.1:8000/backend/user/register/confirm
+Content-Type: application/json
+
+{
+    "email": "mini@mail.ru",
+    "token": "e1fdcdb4567fbd15531ba9a66e"
+}
+
+###
+
+
+# Вход в аккаунт пользователя, возвращает токен аутентификации
+POST http://127.0.0.1:8000/backend/user/login
+Content-Type: application/json
+
+{
+    "email": "mini@mail.ru",
+    "password": "some_validate_passwodr12345"
+}
+
+###
+
+
+# Для сброса пароля пользователя
+POST http://127.0.0.1:8000/backend/user/password_reset
+Content-Type: application/json
+Token: "8c841175217584843aa2da1c3a500de5fc38138f"
+
+{
+    "email": "mini@mail.ru"
+}
+
+###
+
+
+# Для установки нового пароля
+POST http://127.0.0.1:8000/backend/user/password_reset/confirm
+Content-Type: application/json
+Token: "8c841175217584843aa2da1c3a500de5fc38138f"
+
+{
+    "email": "mini@mail.ru",
+    "token": "b7398161f334d563f3195113",
+    "password": "some_validate_passwodr12345"
+}
+
+###
+
+
+# Для обновления ассортимента магазина
+POST http://127.0.0.1:8000/backend/shop/update
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+{
+    "url": "https://raw.githubusercontent.com/ArturRy/Diplom_project/main/data/shop1.yaml"
+}
+
+###
+
+
+# Получить список товаров пользователя
+GET   http://127.0.0.1:8000/backend/product/info
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+###
+
+
+# Редактировать данные товара пользователя
+PATCH    http://127.0.0.1:8000/backend/product/info
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+{
+    "external_id": 4216313,
+    "quantity": 25
+}
+###
+
+
+# Получить информацию о пользователе
+GET http://127.0.0.1:8000/backend/user/info
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+###
+# Для добавления контактов пользователя
+POST http://127.0.0.1:8000/backend/user/info
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+{
+    "city": "city",
+    "street": "street",
+    "phone": "phone"
+}
+###
+# Для редактирования контактов пользователя
+PATCH  http://127.0.0.1:8000/backend/user/info
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+{
+    "phone": "another_phone"
+}
+
+###
+# Для удаления контактов пользователя
+DELETE   http://127.0.0.1:8000/backend/user/info
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+###
+
+# Создает заказ со статусом корзины и добавляет в него товар
+POST   http://127.0.0.1:8000/backend/basket
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+{
+    "product_info": 18,
+    "quantity": 1,
+    "contact_id": 3
+}
+
+###
+
+# Получить информацию о товарах в корзине
+GET   http://127.0.0.1:8000/backend/basket
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+###
+
+# Редактировать товар в корзине
+PATCH    http://127.0.0.1:8000/backend/basket
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+{
+    "product_info": 18,
+    "quantity": 2
+}
+###
+
+# Удалить товар из корзины
+DELETE     http://127.0.0.1:8000/backend/basket
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+{
+    "product_info": 18
+}
+###
+
+# Меняет статус заказа на new (передает его поставщику), возвращает токен подтверждения
+PUT     http://127.0.0.1:8000/backend/basket
+Content-Type: application/json
+Authorization: Token 8c841175217584843aa2da1c3a500de5fc38138f
+
+###
+
+GET     http://127.0.0.1:8000/backend/order
+Content-Type: application/json
+Authorization: Token shop
+
+###
+
+PATCH      http://127.0.0.1:8000/backend/order
+Content-Type: application/json
+Authorization: Token shop
+
+{
+    "id": 44,
+    "state": "delivered"
+}
+
+###
+
+
+
+
+
+

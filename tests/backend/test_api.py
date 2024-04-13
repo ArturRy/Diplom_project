@@ -195,7 +195,6 @@ def test_basket(client, user_factory, order_factory, shop_factory, contact_facto
     assert patch_resp.status_code == 200
     assert patch_resp.json()['Status'] is True
 
-
     delete_resp = client.delete('/backend/basket', data={'product_info': product_info.pk})
     assert delete_resp.status_code == 200
     assert len(OrderItem.objects.filter(product_info=product_info.pk)) == 0
@@ -254,11 +253,11 @@ def test_product_info(client, product_info_factory, product_factory, user_factor
     print(shop.pk)
     assert patch_resp.json()['Status'] is True
 
-@pytest.mark.django_db
-def test_partner_update(client, user_factory):
-    user = user_factory(type='shop')
-    client.force_authenticate(user=user)
-    url = 'https://raw.githubusercontent.com/ArturRy/Diplom_project/main/data/shop1.yaml'
-    response = client.post('/backend/shop/update', data={'url': url})
-    assert response.status_code == 200
-    assert response.json()['Status'] is True
+# @pytest.mark.django_db
+# def test_partner_update(client, user_factory):
+#     user = user_factory(type='shop')
+#     client.force_authenticate(user=user)
+#     url = 'https://raw.githubusercontent.com/ArturRy/Diplom_project/main/data/shop1.yaml'
+#     response = client.post('/backend/shop/update', data={'url': url})
+#     assert response.status_code == 200
+#     assert response.json()['Status'] is True

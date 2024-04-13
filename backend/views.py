@@ -211,9 +211,9 @@ class UserView(APIView):
                                  'Error': 'Повторное добавление данных запрещено, '
                                           'воспользуйтесь методом обновления данных'})
         if {'city', 'street', 'phone'}.issubset(request.data):
-            request.data._mutable = True
-            request.data.update({'user': request.user.id})
-            serializer = ContactSerializer(data=request.data)
+            data = request.data.copy()
+            data.update({'user': request.user.id})
+            serializer = ContactSerializer(data=data)
 
             if serializer.is_valid():
                 serializer.save()
@@ -233,7 +233,6 @@ class UserView(APIView):
         contact = Contact.objects.filter(user_id=request.user.id).first()
 
         if contact:
-            # request.data._mutable = True
             copy_request_data = request.data.copy()
             copy_request_data.update({'user': request.user.id})
 
@@ -349,9 +348,9 @@ class BasketView(APIView):
                 fact_quantity = int(ProductInfo.objects.get(id=request.data['product_info']).quantity)
 
                 if (fact_quantity - need_quantity) >= 0:
-                    request.data._mutable = True
-                    request.data.update({'order': basket.id})
-                    serializer = OrderItemSerializer(data=request.data)
+                    data = request.data.copy()
+                    data.update({'order': basket.id})
+                    serializer = OrderItemSerializer(data=data)
 
                     if serializer.is_valid():
                         serializer.save()
